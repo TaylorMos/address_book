@@ -79,8 +79,19 @@ public class ContactManager {
             person.setGroup(updatedGroups.toString().trim());
         }
     }
+    // 根据分组名获取对应的Person对象列表
+    public ObservableList<Person> getPersonsByGroup(String groupName) {
+        ObservableList<Person> groupMembers = FXCollections.observableArrayList();
 
+        for (Person person : persons) {
+            String[] groups = person.getGroup().split(",");
+            if (Arrays.asList(groups).contains(groupName)) {
+                groupMembers.add(person);
+            }
+        }
 
+        return groupMembers;
+    }
     // 获取所有Person对象
     public ObservableList<Person> getAllPersons() {
         return persons;

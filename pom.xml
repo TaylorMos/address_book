@@ -15,20 +15,6 @@
     </properties>
 
     <dependencies>
-      <dependency>
-          <groupId>com.example</groupId>
-          <artifactId>ezVcard</artifactId>
-          <version>0.9.3</version>
-          <scope>system</scope>
-          <systemPath>${project.basedir}/libs/ez-vcard-0.9.3.jar</systemPath>
-       </dependency>
-        <dependency>
-            <groupId>com.example</groupId>
-            <artifactId>carme</artifactId>
-            <version>0.4.0</version>
-            <scope>system</scope>
-            <systemPath>${project.basedir}/libs/cardme-0.4.0.jar</systemPath>
-        </dependency>
         <dependency>
             <groupId>com.example</groupId>
             <artifactId>javacsv</artifactId>
@@ -42,6 +28,13 @@
             <version>2.5.0</version>
             <scope>system</scope>
             <systemPath>${project.basedir}/libs/pinyin4j-2.5.0.jar</systemPath>
+        </dependency>
+        <dependency>
+            <groupId>com.example</groupId>
+            <artifactId>ezvcard</artifactId>
+            <version>0.9.3</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/libs/ez-vcard-0.9.3.jar</systemPath>
         </dependency>
     </dependencies>
 
