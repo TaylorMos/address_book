@@ -1,5 +1,7 @@
 package address;
 
+import java.io.File;
+
 public class AddPerson {
 
     /**
@@ -19,6 +21,16 @@ public class AddPerson {
      * @return 创建的Person对象
      */
     public static Person createPerson(String name, String telephone, String phone, String email, String homeAddress, String birthday, String group, String note, String imagePath, String postcode, String workAddress) {
+        // 获取项目根目录的路径
+        String projectRootPath = System.getProperty("user.dir");
+
+        // 构造目标文件的完整路径
+        String targetFileName = imagePath.substring(imagePath.lastIndexOf(File.separator) + 1);
+        String targetFilePath = projectRootPath + File.separator + "photo" + File.separator + targetFileName;
+
+        // 使用PhotoHandler类的copyPhotoToProjectFolder方法复制图片
+        PhotoHandler.copyPhotoToProjectFolder(imagePath, targetFileName);
+
         Person person = new Person();
         person.setName(name);
         person.setTelephone(telephone);
@@ -28,7 +40,7 @@ public class AddPerson {
         person.setBirthday(birthday);
         person.setGroup(group);
         person.setNote(note);
-        person.setPhotopath(imagePath);
+        person.setPhotopath(targetFilePath); // 设置新的图片路径
         person.setPostcode(postcode);
         person.setWorkaddress(workAddress);
         return person;

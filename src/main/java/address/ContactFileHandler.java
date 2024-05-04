@@ -1,5 +1,4 @@
 package address;
-
 import com.csvreader.CsvReader;
 import com.csvreader.CsvWriter;
 import ezvcard.Ezvcard;
@@ -93,20 +92,21 @@ public class ContactFileHandler {
         List<Person> contacts = new ArrayList<>();
         try {
             List<VCard> vcards = Ezvcard.parse(vCardFile).all();
-            // 遍历vCard文件中的每一个联系人
             for (VCard vcard : vcards) {
                 String name = vcard.getFormattedName().getValue();
                 String telephone = vcard.getTelephoneNumbers().isEmpty() ? "" : vcard.getTelephoneNumbers().get(0).getText();
                 String email = vcard.getEmails().isEmpty() ? "" : vcard.getEmails().get(0).getValue();
                 String note = vcard.getNotes().isEmpty() ? "" : vcard.getNotes().get(0).getValue();
                 String photopath = vcard.getPhotos().isEmpty() ? "" : vcard.getPhotos().get(0).getUrl();
+                // Convert URL to local file path
+                if (photopath.startsWith("file://")) {
+                    photopath = photopath.substring(7);
+                }
                 Person person = new Person(name, telephone, "", email, "", "", "", note, photopath, "", "");
                 contacts.add(person);
             }
         } catch (IOException e) {
-            // 异常处理
-            System.out.println("读取vCard文件出错：" + e.getMessage());// 异常处理
-            return new ArrayList<>(); // 返回空列表
+            // Handle exception
         }
         return contacts;
     }

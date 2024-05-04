@@ -7,7 +7,11 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
+import static jdk.nashorn.tools.Shell.SUCCESS;
+import static org.ietf.jgss.GSSException.FAILURE;
+
 public class ContactManager {
+    private static final int DUPLICATE =500;
     private ObservableList<String> contactGroups = FXCollections.observableArrayList();
     private ObservableList<Person> persons = FXCollections.observableArrayList();
 
@@ -15,9 +19,12 @@ public class ContactManager {
     public ContactManager() {}
 
     // 添加联系人分组
-    public void addContactGroup(String groupName) {
+    public int addContactGroup(String groupName) {
         if (!contactGroups.contains(groupName)) {
             contactGroups.add(groupName);
+            return SUCCESS;
+        } else {
+            return FAILURE;
         }
     }
 
@@ -54,7 +61,7 @@ public class ContactManager {
         }
     }
     // 将Person对象放入指定的联系人组中
-    public void assignPersonToGroup(Person person, String groupName) {
+    public int assignPersonToGroup(Person person, String groupName) {
         if (!contactGroups.contains(groupName)) {
             throw new IllegalArgumentException("不存在该联系人组！");
         }
@@ -65,10 +72,14 @@ public class ContactManager {
         // 如果当前人员尚未分配任何分组，则直接设置新分组
         if (currentGroups.isEmpty()) {
             person.setGroup(groupName);
+            return SUCCESS;
         } else {
             // 已有分组的情况下，将新分组添加到分组列表中
             String[] existingGroups = currentGroups.split(",");
             Set<String> groupSet = new HashSet<>(Arrays.asList(existingGroups));
+            if (groupSet.contains(groupName)) {
+                return DUPLICATE;
+            }
             groupSet.add(groupName);
 
             // 更新人员的分组信息为逗号分隔的字符串
@@ -77,6 +88,7 @@ public class ContactManager {
                 updatedGroups.append(group).append(",");
             }
             person.setGroup(updatedGroups.toString().trim());
+            return SUCCESS;
         }
     }
     // 根据分组名获取对应的Person对象列表
