@@ -7,7 +7,8 @@ import ezvcard.VCard;
 import ezvcard.parameter.ImageType;
 import ezvcard.parameter.TelephoneType;
 import ezvcard.property.*;
-import javafx.util.Pair;
+import jdk.internal.net.http.common.Pair;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;

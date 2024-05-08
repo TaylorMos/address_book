@@ -63,6 +63,7 @@ public class sift {
                     strPerson[8],
                     strPerson[9],
                     strPerson[10]
+                    ,strPerson[11]
             );
             originalContacts.add(person);
             filteredContacts.add(person);

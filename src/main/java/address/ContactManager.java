@@ -1,12 +1,5 @@
 package address;
-
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
-
 import java.util.*;
-
-import static jdk.nashorn.tools.Shell.SUCCESS;
-import static org.ietf.jgss.GSSException.FAILURE;
 
 /**
  * 联系人管理器类，用于管理联系人分组和联系人信息。
