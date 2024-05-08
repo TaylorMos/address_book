@@ -18,9 +18,10 @@ public class AddPerson {
      * @param imagePath     图片路径
      * @param postcode      邮编
      * @param workAddress   工作地
+     * @param gender         性别
      * @return 创建的Person对象
      */
-    public static Person createPerson(String name, String telephone, String phone, String email, String homeAddress, String birthday, String group, String note, String imagePath, String postcode, String workAddress) {
+    public static Person createPerson(String name, String telephone, String phone, String email, String homeAddress, String birthday, String group, String note, String imagePath, String postcode, String workAddress,String gender) {
         // 获取项目根目录的路径
         String projectRootPath = System.getProperty("user.dir");
 
@@ -31,18 +32,7 @@ public class AddPerson {
         // 使用PhotoHandler类的copyPhotoToProjectFolder方法复制图片
         PhotoHandler.copyPhotoToProjectFolder(imagePath, targetFileName);
 
-        Person person = new Person();
-        person.setName(name);
-        person.setTelephone(telephone);
-        person.setPhone(phone);
-        person.setEmail(email);
-        person.setHomeaddress(homeAddress);
-        person.setBirthday(birthday);
-        person.setGroup(group);
-        person.setNote(note);
-        person.setPhotopath(targetFilePath); // 设置新的图片路径
-        person.setPostcode(postcode);
-        person.setWorkaddress(workAddress);
+        Person person = new Person(name, telephone, phone, email, homeAddress, birthday, group, note, targetFilePath, postcode, workAddress,gender);
         return person;
     }
 }

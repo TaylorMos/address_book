@@ -1,80 +1,112 @@
 package address;
+
 import com.csvreader.CsvReader;
 import com.csvreader.CsvWriter;
 import ezvcard.Ezvcard;
 import ezvcard.VCard;
 import ezvcard.parameter.ImageType;
-import ezvcard.property.Photo;
-import java.io.InputStream;
+import ezvcard.parameter.TelephoneType;
+import ezvcard.property.*;
+import javafx.util.Pair;
+import java.io.File;
+import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
+import java.io.InputStream;
 import java.io.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
- * å¤„ç†è”ç³»äººæ–‡ä»¶çš„ç±»ï¼ŒåŒ…æ‹¬ä»CSVå’ŒvCardæ–‡ä»¶ä¸­è¯»å–è”ç³»äººä¿¡æ¯ï¼Œä»¥åŠå°†è”ç³»äººä¿¡æ¯å†™å…¥åˆ°CSVå’ŒvCardæ–‡ä»¶ä¸­ã€‚
+ * ´¦ÀíÁªÏµÈËÎÄ¼şµÄÀà£¬°üÀ¨´ÓCSVºÍvCardÎÄ¼şÖĞ¶ÁÈ¡ÁªÏµÈËĞÅÏ¢£¬ÒÔ¼°½«ÁªÏµÈËĞÅÏ¢Ğ´Èëµ½CSVºÍvCardÎÄ¼şÖĞ¡£
  */
 public class ContactFileHandler {
 
     /**
-     * ä»CSVæ–‡ä»¶ä¸­è¯»å–è”ç³»äººä¿¡æ¯ã€‚
+     * ´ÓCSVÎÄ¼şÖĞ¶ÁÈ¡ÁªÏµÈËĞÅÏ¢¡£
      *
-     * @param csvFile è¦è¯»å–çš„CSVæ–‡ä»¶ã€‚
-     * @return ä»CSVæ–‡ä»¶ä¸­è¯»å–çš„è”ç³»äººåˆ—è¡¨ã€‚
+     * @param csvFile Òª¶ÁÈ¡µÄCSVÎÄ¼ş¡£
+     * @return ·µ»ØÒ»¸öPair¶ÔÏó£¬ÆäÖĞ°üº¬Ò»¸öHashMap£¬¼üÎª×éÃû£¬ÖµÎª¸Ã×éµÄÁªÏµÈËÁĞ±í£»ÒÔ¼°Ò»¸ö¶ÀÁ¢µÄÁªÏµÈËÁĞ±í¡£
      */
-    public List<Person> readContactsFromCSV(File csvFile) {
+    public Pair<HashMap<String, List<Person>>, List<Person>> readContactsFromCSV(File csvFile) {
         List<Person> contacts = new ArrayList<>();
+        HashMap<String, List<Person>> contactsGroup = new HashMap<>();
         CsvReader reader = null;
         try {
-            reader = new CsvReader(new FileReader(csvFile), ',');
+            reader = new CsvReader(new FileReader(csvFile));
+            reader.readHeaders(); // ¶ÁÈ¡±íÍ·
+
+            // ½«±íÍ·Ó³Éäµ½ÁĞË÷Òı
+            Map<String, Integer> headerMap = new HashMap<>();
+            for (int i = 0; i < reader.getHeaderCount(); i++) {
+                headerMap.put(reader.getHeader(i), i);
+            }
+
+            // ¶ÁÈ¡¼ÇÂ¼²¢Ìî³äÁªÏµÈËĞÅÏ¢
             while (reader.readRecord()) {
-                // è¯»å–CSVæ–‡ä»¶ä¸­çš„ä¸€è¡Œæ•°æ®ï¼Œå¹¶åˆ›å»ºä¸€ä¸ªPersonå¯¹è±¡
-                String name = reader.get(0);
-                String telephone = reader.get(1);
-                String phone = reader.get(2);
-                String email = reader.get(3);
-                String homeaddress = reader.get(4);
-                String birthday = reader.get(5);
-                String group = reader.get(6);
-                String note = reader.get(7);
-                String photopath = reader.get(8);
-                String postcode = reader.get(9);
-                String workaddress = reader.get(10);
-                Person person = new Person(name, telephone, phone, email, homeaddress, birthday, group, note, photopath, postcode, workaddress);
+                String name = reader.get(headerMap.get("Name"));
+                String telephone = reader.get(headerMap.get("Telephone"));
+                String phone = reader.get(headerMap.get("Phone"));
+                String email = reader.get(headerMap.get("Email"));
+                String homeaddress = reader.get(headerMap.get("HomeAddress"));
+                String birthday = reader.get(headerMap.get("Birthday"));
+                String group = reader.get(headerMap.get("Group"));
+                String note = reader.get(headerMap.get("Note"));
+                String photopath = reader.get(headerMap.get("PhotoPath"));
+                String postcode = reader.get(headerMap.get("Postcode"));
+                String workaddress = reader.get(headerMap.get("WorkAddress"));
+                String gender = reader.get(headerMap.get("Gender"));
+                Person person = new Person(name, telephone, phone, email, homeaddress, birthday, group, note, photopath, postcode, workaddress, gender);
                 contacts.add(person);
+                if (!contactsGroup.containsKey(group)) {
+                    contactsGroup.put(group, new ArrayList<>());
+                }
+                contactsGroup.get(group).add(person);
             }
         } catch (IOException e) {
-            // å¼‚å¸¸å¤„ç†
-            System.out.println("è¯»å–CSVæ–‡ä»¶å‡ºé”™ï¼š" + e.getMessage());
-            return new ArrayList<>(); // è¿”å›ç©ºåˆ—è¡¨
+            System.out.println("¶ÁÈ¡CSVÎÄ¼ş³ö´í£º" + e.getMessage());
+            return new Pair<>(contactsGroup, contacts);
         } finally {
             if (reader != null) {
                 reader.close();
             }
         }
-        return contacts;
+        return new Pair<>(contactsGroup, contacts);
     }
 
     /**
-     * å°†è”ç³»äººä¿¡æ¯å†™å…¥åˆ°CSVæ–‡ä»¶ä¸­ã€‚
+     * ½«ÁªÏµÈËĞÅÏ¢Ğ´ÈëCSVÎÄ¼ş¡£
      *
-     * @param contacts è¦å†™å…¥çš„è”ç³»äººåˆ—è¡¨ã€‚
-     * @param csvFile è¦å†™å…¥çš„CSVæ–‡ä»¶ã€‚
+     * @param contacts ÒªĞ´ÈëµÄÁªÏµÈËÁĞ±í¡£
+     * @param csvFile ÒªĞ´ÈëµÄCSVÎÄ¼ş¡£
      */
     public void writeContactsToCSV(List<Person> contacts, File csvFile) {
         CsvWriter writer = null;
         try {
             writer = new CsvWriter(new FileWriter(csvFile), ',');
-            // éå†è”ç³»äººåˆ—è¡¨ï¼Œå°†ä¿¡æ¯å†™å…¥CSVæ–‡ä»¶
+
+            // ¶¨Òå±íÍ·
+            String[] headers = {"Name", "Telephone", "Phone", "Email", "Home Address", "Birthday", "Group", "Note", "Photo Path", "Postcode", "Work Address", "Gender"};
+
+            // Ğ´Èë±íÍ·
+            writer.writeRecord(headers);
+
+            // Ğ´ÈëÁªÏµÈËĞÅÏ¢
             for (Person person : contacts) {
-                String[] entries = {person.getName(), person.getTelephone(), person.getPhone(), person.getEmail(), person.getHomeaddress(), person.getBirthday(), person.getGroup(), person.getNote(), person.getPhotopath(), person.getPostcode(), person.getWorkaddress()};
+                String[] entries = {person.getName(), person.getTelephone(), person.getPhone(), person.getEmail(),
+                        person.getHomeaddress(), person.getBirthday(), person.getGroup(), person.getNote(),
+                        person.getPhotopath(), person.getPostcode(), person.getWorkaddress(), person.getGender()};
                 writer.writeRecord(entries);
             }
         } catch (IOException e) {
-            // å¼‚å¸¸å¤„ç†
-            System.out.println("å†™å…¥CSVæ–‡ä»¶å‡ºé”™ï¼š" + e.getMessage());
+            System.out.println("Ğ´ÈëCSVÎÄ¼ş³ö´í£º" + e.getMessage());
         } finally {
             if (writer != null) {
                 writer.close();
@@ -83,57 +115,131 @@ public class ContactFileHandler {
     }
 
     /**
-     * ä»vCardæ–‡ä»¶ä¸­è¯»å–è”ç³»äººä¿¡æ¯ã€‚
+     * ½«ÁªÏµÈËĞÅÏ¢±£´æµ½ĞÂµÄCSVÎÄ¼ş¡£
      *
-     * @param vCardFile è¦è¯»å–çš„vCardæ–‡ä»¶ã€‚
-     * @return ä»vCardæ–‡ä»¶ä¸­è¯»å–çš„è”ç³»äººåˆ—è¡¨ã€‚
+     * @param contacts ÒªĞ´ÈëµÄÁªÏµÈËÁĞ±í¡£
+     * @param name CSVÎÄ¼şÃû×Ö
      */
-    public List<Person> readContactsFromVCard(File vCardFile) {
+    public void writeContactsToCSV(List<Person> contacts, String name) {
+        File file = new File("/personFile/csv/" + name + ".csv");
+        CsvWriter writer = null;
+        try {
+            writer = new CsvWriter(new FileWriter(file), ',');
+            // Ìí¼Ó±íÍ·
+            String[] headers = {"Name", "Telephone", "Phone", "Email", "HomeAddress", "Birthday", "Group", "Note", "PhotoPath", "Postcode", "WorkAddress", "Gender"};
+            writer.writeRecord(headers);
+            // ±éÀúÁªÏµÈËÁĞ±í£¬Ğ´ÈëCSVÎÄ¼ş
+            for (Person person : contacts) {
+                String[] entries = {person.getName(), person.getTelephone(), person.getPhone(), person.getEmail(),
+                        person.getHomeaddress(), person.getBirthday(), person.getGroup(), person.getNote(), person.getPhotopath(),
+                        person.getPostcode(), person.getWorkaddress(), person.getGender()};
+                writer.writeRecord(entries);
+            }
+        } catch (IOException e) {
+            System.out.println("Ğ´ÈëCSVÎÄ¼ş³ö´í£º" + e.getMessage());
+        } finally {
+            if (writer != null) {
+                writer.close();
+            }
+        }
+    }
+
+    /**
+     * ´ÓvCardÎÄ¼şÖĞ¶ÁÈ¡ÁªÏµÈËĞÅÏ¢¡£
+     *
+     * @param vCardFile Òª¶ÁÈ¡µÄvCardÎÄ¼ş¡£
+     * @return ·µ»ØÒ»¸öPair¶ÔÏó£¬ÆäÖĞ°üº¬Ò»¸öHashMap£¬¼üÎª×éÃû£¬ÖµÎª¸Ã×éµÄÁªÏµÈËÁĞ±í£»ÒÔ¼°Ò»¸ö¶ÀÁ¢µÄÁªÏµÈËÁĞ±í¡£
+     */
+    public Pair<HashMap<String, List<Person>>, List<Person>> readContactsFromVCard(File vCardFile) {
         List<Person> contacts = new ArrayList<>();
+        HashMap<String, List<Person>> contactsGroup = new HashMap<>();
+
         try {
             List<VCard> vcards = Ezvcard.parse(vCardFile).all();
             for (VCard vcard : vcards) {
                 String name = vcard.getFormattedName().getValue();
-                String telephone = vcard.getTelephoneNumbers().isEmpty() ? "" : vcard.getTelephoneNumbers().get(0).getText();
-                String email = vcard.getEmails().isEmpty() ? "" : vcard.getEmails().get(0).getValue();
-                String note = vcard.getNotes().isEmpty() ? "" : vcard.getNotes().get(0).getValue();
-                String photopath = vcard.getPhotos().isEmpty() ? "" : vcard.getPhotos().get(0).getUrl();
-                // Convert URL to local file path
-                if (photopath.startsWith("file://")) {
-                    photopath = photopath.substring(7);
+                String email = vcard.getEmails().get(0).getValue();
+                String note = vcard.getNotes().get(0).getValue();
+                String gender = vcard.getGender().getGender();
+                String homeaddress = vcard.getAddresses().get(0).getStreetAddress();
+                String birthday = vcard.getBirthday().getDate().toString();
+                String group = vcard.getExtendedProperty("GROUP").getValue();
+                String workaddress = vcard.getExtendedProperty("WORKADR").getValue();
+                String photopath = vcard.getPhotos().get(0).getUrl();
+                String postcode = vcard.getAddresses().get(0).getPostalCode();
+                String telephone = null;
+                String phone = null;
+                for (Telephone tel : vcard.getTelephoneNumbers()) {
+                    if (tel.getTypes().contains(TelephoneType.WORK)) {
+                        telephone = tel.getText();
+                    } else if (tel.getTypes().contains(TelephoneType.CELL)) {
+                        phone = tel.getText();
+                    }
                 }
-                Person person = new Person(name, telephone, "", email, "", "", "", note, photopath, "", "");
+                Person person = new Person(name, telephone, phone, email, homeaddress, birthday, group, note, photopath, postcode, workaddress, gender);
+                person.setGender(gender);
                 contacts.add(person);
+                if (!contactsGroup.containsKey(group)) {
+                    contactsGroup.put(group, new ArrayList<>());
+                }
+                contactsGroup.get(group).add(person);
             }
         } catch (IOException e) {
-            // Handle exception
+            System.out.println("¶ÁÈ¡vCardÎÄ¼ş³ö´í£º" + e.getMessage());
         }
-        return contacts;
+        return new Pair<>(contactsGroup, contacts);
     }
 
     /**
-     * å°†è”ç³»äººä¿¡æ¯å†™å…¥åˆ°vCardæ–‡ä»¶ä¸­ã€‚
+     * ½«ÁªÏµÈËĞÅÏ¢±£´æµ½vCardÎÄ¼ş¡£
      *
-     * @param contacts è¦å†™å…¥çš„è”ç³»äººåˆ—è¡¨ã€‚
-     * @param vCardFile è¦å†™å…¥çš„vCardæ–‡ä»¶ã€‚
+     * @param contacts ÒªĞ´ÈëµÄÁªÏµÈËÁĞ±í¡£
+     * @param vCardFile ÒªĞ´ÈëµÄvCardÎÄ¼ş¡£
      */
     public void writeContactsToVCard(List<Person> contacts, File vCardFile) {
         List<VCard> vcards = new ArrayList<>();
         for (Person person : contacts) {
             VCard vcard = new VCard();
             vcard.setFormattedName(person.getName());
-            vcard.addTelephoneNumber(person.getTelephone());
+            // Ìí¼Óµç»°ºÅÂë£¬²¢±ê¼ÇÎª¹¤×÷µç»°
+            Telephone tel1 = new Telephone(person.getTelephone());
+            tel1.addType(TelephoneType.WORK);
+            vcard.addTelephoneNumber(tel1);
+
+            // Ìí¼Óµç»°ºÅÂë£¬²¢±ê¼ÇÎªÊÖ»ú
+            Telephone tel2 = new Telephone(person.getPhone());
+            tel2.addType(TelephoneType.CELL);
+            vcard.addTelephoneNumber(tel2);
             vcard.addEmail(person.getEmail());
             vcard.addNote(person.getNote());
-
-            // å¤„ç†è”ç³»äººç…§ç‰‡
+            // Ìí¼ÓĞÔ±ğ
+            if ("male".equalsIgnoreCase(person.getGender())) {
+                vcard.setGender(Gender.male());
+            } else if ("female".equalsIgnoreCase(person.getGender())) {
+                vcard.setGender(Gender.female());
+            }
+            // Ìí¼Ó¼ÒÍ¥µØÖ·
+            Address homeAddress = new Address();
+            homeAddress.setStreetAddress(person.getHomeaddress());
+            homeAddress.setPostalCode(person.getPostcode()); // Ìí¼ÓÓÊÕş±àÂë
+            vcard.addAddress(homeAddress);
+            // Ìí¼ÓÉúÈÕ
+            LocalDate localDateBirthday = LocalDate.parse(person.getBirthday(), DateTimeFormatter.ofPattern("yyyyMMdd"));
+            Date dateBirthday = Date.from(localDateBirthday.atStartOfDay(ZoneId.systemDefault()).toInstant());
+            Birthday birthday = new Birthday(dateBirthday);
+            vcard.setBirthday(birthday);
+            // Ìí¼Ó×é±ğ
+            vcard.addExtendedProperty("GROUP", person.getGroup());
+            // Ìí¼Ó¹¤×÷µØÖ·
+            vcard.addExtendedProperty("WORKADR", person.getWorkaddress());
+            // ´¦ÀíÁªÏµÈËÕÕÆ¬
             try (InputStream in = new URL(person.getPhotopath()).openStream()) {
                 byte[] imageBytes = Files.readAllBytes(Paths.get(person.getPhotopath()));
                 Photo photo = new Photo(imageBytes, ImageType.JPEG);
                 vcard.addPhoto(photo);
             } catch (IOException e) {
-                // å¼‚å¸¸å¤„ç†
-                System.out.println("å¤„ç†è”ç³»äººç…§ç‰‡å‡ºé”™ï¼š" + e.getMessage());
+                // Òì³£´¦Àí
+                System.out.println("´¦ÀíÁªÏµÈËÕÕÆ¬³ö´í£º" + e.getMessage());
                 continue;
             }
             vcards.add(vcard);
@@ -141,8 +247,72 @@ public class ContactFileHandler {
         try {
             Ezvcard.write(vcards).go(vCardFile);
         } catch (IOException e) {
-            // å¼‚å¸¸å¤„ç†
-            System.out.println("å†™å…¥vCardæ–‡ä»¶å‡ºé”™ï¼š" + e.getMessage());
+            // Òì³£´¦Àí
+            System.out.println("Ğ´ÈëvCardÎÄ¼ş³ö´í£º" + e.getMessage());
+        }
+    }
+
+    /**
+     * ½«ÁªÏµÈËÁĞ±í±£´æµ½ĞÂµÄVCardÎÄ¼şÖĞ
+     * @param contacts ÁªÏµÈËÁĞ±í£¬Ã¿¸öÁªÏµÈË°üº¬ĞÕÃû¡¢µç»°¡¢ÓÊÏäµÈĞÅÏ¢¡£
+     * @param name ±£´æµÄVCardÎÄ¼şÃû¡£
+     */
+    public void writeContactsToVCard(List<Person> contacts, String name) {
+        //ÔÚ/personFile/vCard/Ä¿Â¼ÏÂ´´½¨Ò»¸öname.vCardÎÄ¼ş
+        File vCardFile = new File("/personFile/vCard/" + name + ".vcf");
+        List<VCard> vcards = new ArrayList<>();
+        for (Person person : contacts) {
+            VCard vcard = new VCard();
+            vcard.setFormattedName(person.getName());
+            // Ìí¼Óµç»°ºÅÂë£¬²¢±ê¼ÇÎª¹¤×÷µç»°
+            Telephone tel1 = new Telephone(person.getTelephone());
+            tel1.addType(TelephoneType.WORK);
+            vcard.addTelephoneNumber(tel1);
+
+            // Ìí¼Óµç»°ºÅÂë£¬²¢±ê¼ÇÎªÊÖ»ú
+            Telephone tel2 = new Telephone(person.getPhone());
+            tel2.addType(TelephoneType.CELL);
+            vcard.addTelephoneNumber(tel2);
+            vcard.addEmail(person.getEmail());
+            vcard.addNote(person.getNote());
+            // Ìí¼ÓĞÔ±ğ
+            if ("male".equalsIgnoreCase(person.getGender())) {
+                vcard.setGender(Gender.male());
+            } else if ("female".equalsIgnoreCase(person.getGender())) {
+                vcard.setGender(Gender.female());
+            }
+            // Ìí¼Ó¼ÒÍ¥µØÖ·
+            Address homeAddress = new Address();
+            homeAddress.setStreetAddress(person.getHomeaddress());
+            homeAddress.setPostalCode(person.getPostcode()); // Ìí¼ÓÓÊÕş±àÂë
+            vcard.addAddress(homeAddress);
+            // Ìí¼ÓÉúÈÕ
+            LocalDate localDateBirthday = LocalDate.parse(person.getBirthday(), DateTimeFormatter.ofPattern("yyyyMMdd"));
+            Date dateBirthday = Date.from(localDateBirthday.atStartOfDay(ZoneId.systemDefault()).toInstant());
+            Birthday birthday = new Birthday(dateBirthday);
+            vcard.setBirthday(birthday);
+            // Ìí¼Ó×é±ğ
+            vcard.addExtendedProperty("GROUP", person.getGroup());
+            // Ìí¼Ó¹¤×÷µØÖ·
+            vcard.addExtendedProperty("WORKADR", person.getWorkaddress());
+            // ´¦ÀíÁªÏµÈËÕÕÆ¬
+            try (InputStream in = new URL(person.getPhotopath()).openStream()) {
+                byte[] imageBytes = Files.readAllBytes(Paths.get(person.getPhotopath()));
+                Photo photo = new Photo(imageBytes, ImageType.JPEG);
+                vcard.addPhoto(photo);
+            } catch (IOException e) {
+                // Òì³£´¦Àí
+                System.out.println("´¦ÀíÁªÏµÈËÕÕÆ¬³ö´í£º" + e.getMessage());
+                continue;
+            }
+            vcards.add(vcard);
+        }
+        try {
+            Ezvcard.write(vcards).go(vCardFile);
+        } catch (IOException e) {
+            // Òì³£´¦Àí
+            System.out.println("Ğ´ÈëvCardÎÄ¼ş³ö´í£º" + e.getMessage());
         }
     }
 }
+

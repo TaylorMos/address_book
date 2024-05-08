@@ -8,18 +8,18 @@ import java.util.UUID;
 public class PhotoHandler {
     public static void copyPhotoToProjectFolder(String sourceFilePath, String targetFileName) {
 
-        // è·å–æºæ–‡ä»¶è·¯å¾„
+        // »ñÈ¡Ô´ÎÄ¼şÂ·¾¶
         File sourceFile = new File(sourceFilePath);
 
-        // è·å–ç›®æ ‡æ–‡ä»¶è·¯å¾„
+        // »ñÈ¡Ä¿±êÎÄ¼şÂ·¾¶
         String projectFolderPath = System.getProperty("user.dir");
         File targetFile = new File(projectFolderPath + "/photo/" + targetFileName);
         try {
-            // å¤åˆ¶æ–‡ä»¶
+            // ¸´ÖÆÎÄ¼ş
             Files.copy(sourceFile.toPath(), targetFile.toPath());
-            System.out.println("æ–‡ä»¶å¤åˆ¶æˆåŠŸï¼");
+            System.out.println("ÎÄ¼ş¸´ÖÆ³É¹¦£¡");
         } catch (IOException e) {
-            System.out.println("æ–‡ä»¶å¤åˆ¶å¤±è´¥ï¼š" + e.getMessage());
+            System.out.println("ÎÄ¼ş¸´ÖÆÊ§°Ü£º" + e.getMessage());
         }
     }
 }

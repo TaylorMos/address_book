@@ -3,109 +3,138 @@ package address;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 import static jdk.nashorn.tools.Shell.SUCCESS;
 import static org.ietf.jgss.GSSException.FAILURE;
 
+/**
+ * 联系人管理器类，用于管理联系人分组和联系人信息。
+ */
 public class ContactManager {
+    // 存储联系人分组和对应联系人列表的哈希映射
+    private HashMap<String,List <Person>> contactGroups = new HashMap<>();
+    // 定义一个常量，表示重复的错误码
     private static final int DUPLICATE =500;
-    private ObservableList<String> contactGroups = FXCollections.observableArrayList();
-    private ObservableList<Person> persons = FXCollections.observableArrayList();
 
-    // 构造函数
+    /**
+     * 无参构造函数，创建一个空的联系人管理器。
+     */
     public ContactManager() {}
 
-    // 添加联系人分组
-    public int addContactGroup(String groupName) {
-        if (!contactGroups.contains(groupName)) {
-            contactGroups.add(groupName);
-            return SUCCESS;
-        } else {
-            return FAILURE;
-        }
+    /**
+     * 带参数构造函数，初始化联系人管理器。
+     *
+     * @param contactGroups 联系人分组的哈希映射
+     */
+    public ContactManager(HashMap<String,List <Person>> contactGroups){
+        this.contactGroups = contactGroups;
     }
 
-    // 删除联系人分组
+    /**
+     * 添加一个新的联系人分组。
+     *
+     * @param groupName 要添加的分组名称
+     * @throws IllegalArgumentException 如果分组已存在，则抛出异常
+     */
+    public void addContactGroup(String groupName) {
+        if (contactGroups.containsKey(groupName)) {
+            throw new IllegalArgumentException("分组已存在！");
+        }
+        contactGroups.put(groupName, new ArrayList<Person>());
+    }
+
+    /**
+     * 从联系人管理器中删除一个联系人分组。
+     *
+     * @param groupName 要删除的分组名称
+     * @throws IllegalArgumentException 如果分组不存在，则抛出异常
+     */
     public void removeContactGroup(String groupName) {
+        if (!contactGroups.containsKey(groupName)) {
+            throw new IllegalArgumentException("分组不存在！");
+        }
+        List<Person> persons= contactGroups.get(groupName);
         contactGroups.remove(groupName);
-    }
-
-    // 查询联系人分组
-    public Set<String> getContactGroups() {
-        return new HashSet<>(contactGroups);
-    }
-
-    // 添加Person对象
-    public void addPerson(Person person) {
-        persons.add(person);
-    }
-
-    // 根据分组名更新Person对象的分组信息
-    public void updatePersonGroup(String oldGroupName, String newGroupName) {
-        for (Person person : persons) {
-            String[] groups = person.getGroup().split(",");
-            if (Arrays.asList(groups).contains(oldGroupName)) {
-                StringBuilder updatedGroups = new StringBuilder();
-                for (String group : groups) {
-                    if (!group.equals(oldGroupName)) {
-                        updatedGroups.append(group).append(",");
-                    } else {
-                        updatedGroups.append(newGroupName).append(",");
-                    }
+        for(Person person:persons) {
+            // 更新联系人的分组信息，从当前分组中移除
+            String currentGroups = person.getGroup();
+            String[] groups = currentGroups.split(",");
+            for (int i = 0; i < groups.length; i++) {
+                if (groups[i].equals(groupName)) {
+                    groups[i] = "";
                 }
-                person.setGroup(updatedGroups.toString().trim());
             }
-        }
-    }
-    // 将Person对象放入指定的联系人组中
-    public int assignPersonToGroup(Person person, String groupName) {
-        if (!contactGroups.contains(groupName)) {
-            throw new IllegalArgumentException("不存在该联系人组！");
-        }
-
-        // 获取当前人员已有的分组字符串
-        String currentGroups = person.getGroup();
-
-        // 如果当前人员尚未分配任何分组，则直接设置新分组
-        if (currentGroups.isEmpty()) {
-            person.setGroup(groupName);
-            return SUCCESS;
-        } else {
-            // 已有分组的情况下，将新分组添加到分组列表中
-            String[] existingGroups = currentGroups.split(",");
-            Set<String> groupSet = new HashSet<>(Arrays.asList(existingGroups));
-            if (groupSet.contains(groupName)) {
-                return DUPLICATE;
-            }
-            groupSet.add(groupName);
-
-            // 更新人员的分组信息为逗号分隔的字符串
             StringBuilder updatedGroups = new StringBuilder();
-            for (String group : groupSet) {
+            for (String group : groups) {
                 updatedGroups.append(group).append(",");
             }
             person.setGroup(updatedGroups.toString().trim());
-            return SUCCESS;
         }
     }
-    // 根据分组名获取对应的Person对象列表
-    public ObservableList<Person> getPersonsByGroup(String groupName) {
-        ObservableList<Person> groupMembers = FXCollections.observableArrayList();
 
-        for (Person person : persons) {
-            String[] groups = person.getGroup().split(",");
-            if (Arrays.asList(groups).contains(groupName)) {
-                groupMembers.add(person);
+    /**
+     * 查询所有的联系人分组名称。
+     *
+     * @return 返回一个包含所有分组名称的集合
+     */
+    public Set<String> getContactGroups() {
+        return contactGroups.keySet();
+    }
+
+    /**
+     * 将一个联系人添加到指定的联系人分组。
+     *
+     * @param person 要添加的联系人
+     * @param groupName 目标分组名称
+     * @throws IllegalArgumentException 如果分组不存在，则抛出异常
+     */
+    public void addPerson(Person person, String groupName) {
+        if (!contactGroups.containsKey(groupName)) {
+            throw new IllegalArgumentException("分组不存在！");
+        }
+        contactGroups.get(groupName).add(person);
+        // 更新联系人分组信息，添加新分组
+        person.setGroup(person.getGroup()+groupName+",");
+    }
+
+    /**
+     * 从指定的联系人分组中移除一个联系人。
+     *
+     * @param person 要移除的联系人
+     * @param groupName 目标分组名称
+     * @throws IllegalArgumentException 如果分组不存在或者联系人不在该分组中，则抛出异常
+     */
+    public void removePerson(Person person, String groupName) {
+        if (!contactGroups.containsKey(groupName)) {
+            throw new IllegalArgumentException("分组不存在！");
+        }
+        List<Person> persons = contactGroups.get(groupName);
+        if (!persons.contains(person)) {
+            throw new IllegalArgumentException("该联系人不在此联系人组");
+        }
+        persons.remove(person);
+        // 更新联系人分组信息，从分组中移除
+        String currentGroups = person.getGroup();
+        String[] groups = currentGroups.split(",");
+        for (int i = 0; i < groups.length; i++) {
+            if (groups[i].equals(groupName)) {
+                groups[i] = "";
             }
         }
-
-        return groupMembers;
+        StringBuilder updatedGroups = new StringBuilder();
+        for (String group : groups) {
+            updatedGroups.append(group).append(",");
+        }
+        person.setGroup(updatedGroups.toString().trim());
     }
-    // 获取所有Person对象
-    public ObservableList<Person> getAllPersons() {
-        return persons;
+
+    /**
+     * 更新联系人管理器中的联系人分组信息。
+     *
+     * @param contactGroups 新的联系人分组哈希映射
+     */
+    public void updateContactGroups(HashMap<String,List <Person>> contactGroups) {
+        this.contactGroups = contactGroups;
     }
 }

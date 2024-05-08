@@ -1,25 +1,70 @@
 package address;
 import java.io.File;
-
+/**
+ * ÏîÄ¿ÎÄ¼ş´´½¨Æ÷£¬ÓÃÓÚ´´½¨ÏîÄ¿Ëù±ØĞëµÄÎÄ¼ş¡£
+ */
 public class DirectoryCreator {
-    public static void createPhotoDirectory() {
-        // è·å–é¡¹ç›®æ ¹ç›®å½•çš„è·¯å¾„
+    public static void createDirectory() {
+        // »ñÈ¡ÏîÄ¿¸ùÄ¿Â¼µÄÂ·¾¶
         String projectRootPath = System.getProperty("user.dir");
 
-        // æ„é€ photoæ–‡ä»¶å¤¹çš„å®Œæ•´è·¯å¾„
+        // ¹¹ÔìphotoÎÄ¼ş¼ĞµÄÍêÕûÂ·¾¶
         String photoDirectoryPath = projectRootPath + File.separator + "photo";
+        //¹¹½¨personFileÎÄ¼ş¼ĞµÄÍêÕûÂ·¾¶
+        String personFileDirectoryPath = projectRootPath + File.separator + "personFile";
+        //´´½¨/personFile/csvºÍ/personFile/vcardÎÄ¼ş¼ĞµÄÍêÕûÂ·¾¶
+        String csvDirectoryPath = projectRootPath + File.separator + "personFile" + File.separator + "csv";
+        String vcardDirectoryPath = projectRootPath + File.separator + "personFile" + File.separator + "vcard";
 
-        // åˆ›å»ºphotoæ–‡ä»¶å¤¹
+        // ´´½¨photoÎÄ¼ş¼Ğ
         File photoDirectory = new File(photoDirectoryPath);
         if (!photoDirectory.exists()) {
             boolean result = photoDirectory.mkdirs();
             if (result) {
-                System.out.println("Photoæ–‡ä»¶å¤¹åˆ›å»ºæˆåŠŸï¼Œè·¯å¾„ä¸º: " + photoDirectoryPath);
+                System.out.println("PhotoÎÄ¼ş¼Ğ´´½¨³É¹¦£¬Â·¾¶Îª: " + photoDirectoryPath);
             } else {
-                System.out.println("Photoæ–‡ä»¶å¤¹åˆ›å»ºå¤±è´¥ï¼Œè·¯å¾„ä¸º: " + photoDirectoryPath);
+                System.out.println("PhotoÎÄ¼ş¼Ğ´´½¨Ê§°Ü£¬Â·¾¶Îª: " + photoDirectoryPath);
             }
         } else {
-            System.out.println("Photoæ–‡ä»¶å¤¹å·²åˆ›å»ºï¼Œè·¯å¾„ä¸ºï¼š " + photoDirectoryPath);
+            System.out.println("PhotoÎÄ¼ş¼ĞÒÑ´´½¨£¬Â·¾¶Îª£º " + photoDirectoryPath);
+        }
+        //´´½¨personFileÎÄ¼ş¼Ğ
+        File personFileDirectory = new File(personFileDirectoryPath);
+        if (!personFileDirectory.exists()) {
+            boolean result = personFileDirectory.mkdirs();
+            if (result) {
+                System.out.println("personFileÎÄ¼ş¼Ğ´´½¨³É¹¦£¬Â·¾¶Îª: " + personFileDirectoryPath);
+            } else {
+                System.out.println("personFileÎÄ¼ş¼Ğ´´½¨Ê§°Ü£¬Â·¾¶Îª: " + personFileDirectoryPath);
+            }
+        } else {
+            System.out.println("personFileÎÄ¼ş¼ĞÒÑ´´½¨£¬Â·¾¶Îª£º " + personFileDirectoryPath);
+        }
+        //´´½¨csvÎÄ¼ş¼Ğ
+        File csvDirectory = new File(csvDirectoryPath);
+        if (!csvDirectory.exists()) {
+            boolean result = csvDirectory.mkdirs();
+            if (result) {
+                System.out.println("csvÎÄ¼ş¼Ğ´´½¨³É¹¦£¬Â·¾¶Îª: " + csvDirectoryPath);
+            } else {
+                System.out.println("csvÎÄ¼ş¼Ğ´´½¨Ê§°Ü£¬Â·¾¶Îª: " + csvDirectoryPath);
+            }
+        } else {
+            System.out.println("csvÎÄ¼ş¼ĞÒÑ´´½¨£¬Â·¾¶Îª£º " + csvDirectoryPath);
+        }
+
+        //´´½¨vcardÎÄ¼ş¼Ğ
+        File vcardDirectory = new File(vcardDirectoryPath);
+
+        if (!vcardDirectory.exists()) {
+            boolean result = vcardDirectory.mkdirs();
+            if (result) {
+                System.out.println("vcardÎÄ¼ş¼Ğ´´½¨³É¹¦£¬Â·¾¶Îª: " + vcardDirectoryPath);
+            } else {
+                System.out.println("vcardÎÄ¼ş¼Ğ´´½¨Ê§°Ü£¬Â·¾¶Îª: " + vcardDirectoryPath);
+            }
+        } else {
+            System.out.println("vcardÎÄ¼ş¼ĞÒÑ´´½¨£¬Â·¾¶Îª£º " + vcardDirectoryPath);
         }
     }
 }
